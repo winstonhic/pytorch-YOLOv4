@@ -154,12 +154,30 @@ class Darknet(nn.Module):
             ind = ind + 1
             # if ind > 0:
             #    return x
-
             if block['type'] == 'net':
                 continue
             elif block['type'] in ['convolutional', 'maxpool', 'reorg', 'upsample', 'avgpool', 'softmax', 'connected']:
-                x = self.models[ind](x)
-                outputs[ind] = x
+                if ind == 76:
+                    # x =  torch.randn(1,9,8,8)
+                    # x =  torch.randn(9,1024,1,1)
+                    x=torch.unsqueeze(x, 2)
+                    x=torch.unsqueeze(x, 2)
+                    model = self.models[ind]
+                    x = model(x)
+                    outputs[ind] = x
+                elif ind == 77:
+                    x = self.models[ind](x)
+                    x = torch.squeeze(x,2)
+                    x = torch.squeeze(x,2)
+                    out_boxes.append(x)
+                    # outputs[ind] = x
+                else:
+                    x = self.models[ind](x)
+                    outputs[ind] = x
+                # if block['type'] in ['softmax']:
+                #     # boxes = self.models[ind](x)
+                #     out_boxes.append(boxes)
+
             elif block['type'] == 'route':
                 layers = block['layers'].split(',')
                 layers = [int(i) if int(i) > 0 else int(i) + ind for i in layers]
@@ -230,7 +248,8 @@ class Darknet(nn.Module):
         if self.training:
             return out_boxes
         else:
-            return get_region_boxes(out_boxes)
+            return out_boxes
+            # return get_region_boxes(out_boxes)
 
     def print_network(self):
         print_cfg(self.blocks)
